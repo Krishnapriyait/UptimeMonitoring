@@ -8,18 +8,18 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t pulseops-ci .'
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t pulseops-ci .'
             }
         }
         stage('Run Pytest') {
             steps {
-                bat 'docker run --rm pulseops-ci python -m pytest test_app.py'
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run --rm pulseops-ci python -m pytest test_app.py'
             }
         }
         stage('Deploy Container') {
             steps {
-                bat 'docker rm -f pulseops-ansible || true'
-                bat 'docker run -d --name pulseops-ansible -p 5000:5000 -v pulseops_data:/app/data pulseops-ci'
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm -f pulseops-ansible || true'
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d --name pulseops-ansible -p 5000:5000 -v pulseops_data:/app/data pulseops-ci'
             }
         }
     }

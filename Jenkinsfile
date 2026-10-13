@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'master', url: 'https://github.com/Jayasree273/DigitalCanteen.git'
+                git branch: 'master', url: 'https://github.com/Krishnapriyait/UptimeMonitoring.git'
             }
         }
         stage('Build Docker Image') {

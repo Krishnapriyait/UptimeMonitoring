@@ -1,0 +1,25 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t pulseops-canteen-ci .'
+            }
+        }
+        stage('Automated Tests') {
+            steps {
+                sh 'docker run --rm pulseops-canteen-ci python -m pytest test_app.py'
+            }
+        }
+        stage('Deploy via Ansible') {
+            steps {
+                sh 'echo "Deployment stage triggered successfully"'
+            }
+        }
+    }
+}

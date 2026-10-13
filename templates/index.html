@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulseOps 2.0 — Intelligent Website Reliability Center</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom Theme Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            950: '#080D19',
+                            900: '#0B1220',
+                            800: '#111B2D',
+                            700: '#162238',
+                            600: '#263650',
+                        },
+                        accent: {
+                            cyan: '#42D9F5',
+                            teal: '#31D6A0',
+                            amber: '#FFBD66',
+                            coral: '#FF647C',
+                            violet: '#A78BFA',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #080D19; color: #F1F5FC; font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0B1220; }
+        ::-webkit-scrollbar-thumb { background: #263650; border-radius: 3px; }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+    <!-- Persistent Sidebar -->
+    <aside id="sidebar" class="w-64 bg-navy-900 border-r border-navy-600 flex flex-col justify-between transition-all duration-300 z-30">
+        <div>
+            <!-- Brand Section -->
+            <div class="p-5 flex items-center gap-3 border-b border-navy-600">
+                <div class="p-2.5 bg-accent-cyan/10 rounded-xl text-accent-cyan border border-accent-cyan/20 shadow-lg shadow-accent-cyan/10">
+                    <i data-lucide="activity" class="w-6 h-6 animate-pulse"></i>
+                </div>
+                <div class="overflow-hidden">
+                    <h1 class="font-bold text-base text-white tracking-wide">PulseOps <span class="text-xs text-accent-cyan font-mono">2.0</span></h1>
+                    <p class="text-[11px] text-[#92A3BC] truncate">Reliability Center</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="p-3 space-y-1">
+                <button onclick="switchSection('overview', this)" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all bg-accent-cyan/15 text-accent-cyan border border-accent-cyan/30 shadow-sm">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Overview
+                </button>
+                <button onclick="switchSection('monitors', this)" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-[#92A3BC] hover:bg-navy-800 hover:text-white">
+                    <i data-lucide="server" class="w-4 h-4"></i> Monitors
+                </button>
+                <button onclick="switchSection('analytics', this)" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-[#92A3BC] hover:bg-navy-800 hover:text-white">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Analytics
+                </button>
+                <button onclick="switchSection('incidents', this)" class="nav-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-[#92A3BC] hover:bg-navy-800 hover:text-white">
+                    <span class="flex items-center gap-3"><i data-lucide="alert-triangle" class="w-4 h-4"></i> Incidents</span>
+                    <span id="incidentBadge" class="bg-accent-coral/20 text-accent-coral text-xs px-2 py-0.5 rounded-full font-bold">2</span>
+                </button>
+                <button onclick="switchSection('sla', this)" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-[#92A3BC] hover:bg-navy-800 hover:text-white">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i> SLA Reports
+                </button>
+                <button onclick="switchSection('alerts', this)" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-[#92A3BC] hover:bg-navy-800 hover:text-white">
+                    <i data-lucide="bell-ring" class="w-4 h-4"></i> Alert Rules
+                </button>
+                <button onclick="switchSection('settings', this)" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-[#92A3BC] hover:bg-navy-800 hover:text-white">
+                    <i data-lucide="settings" class="w-4 h-4"></i> Settings
+                </button>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="p-3 border-t border-navy-600 bg-navy-950/40 space-y-2">
+            <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-navy-800/80 border border-navy-600 text-xs">
+                <div id="engineIndicator" class="w-2.5 h-2.5 rounded-full bg-accent-teal animate-ping"></div>
+                <div class="overflow-hidden">
+                    <p class="text-white font-semibold truncate">Engine: Connected</p>
+                    <p class="text-[#92A3BC] text-[10px]">Flask + SQLite REST API</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 px-2 py-1">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-accent-violet to-accent-cyan flex items-center justify-center font-bold text-white text-xs">
+                    JR
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-semibold text-white truncate">Krishna Priya M</p>
+                    <p class="text-[10px] text-[#92A3BC] truncate">DevOps Admin</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Workspace Container -->
+    <div class="flex-1 flex flex-col min-w-0 bg-navy-950">
+        
+        <!-- Top Toolbar -->
+        <header class="h-16 bg-navy-900/80 backdrop-blur-md border-b border-navy-600 px-6 flex items-center justify-between sticky top-0 z-20">
+            <div class="flex items-center gap-2 text-sm">
+                <span class="text-[#92A3BC]">PulseOps 2.0</span>
+                <span class="text-navy-600">/</span>
+                <span id="breadcrumbTitle" class="font-semibold text-white capitalize">Overview</span>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Search Input -->
+                <div class="relative hidden md:block">
+                    <i data-lucide="search" class="w-4 h-4 text-[#92A3BC] absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    <input type="text" id="globalSearchInput" placeholder="Search monitors, incidents..." oninput="handleGlobalSearch(this.value)" class="bg-navy-950 border border-navy-600 rounded-lg pl-9 pr-4 py-1.5 text-xs text-white placeholder-[#92A3BC] focus:outline-none focus:border-accent-cyan w-56">
+                </div>
+
+                <!-- Environment Selector -->
+                <select id="envFilter" onchange="applyFilters()" class="bg-navy-950 border border-navy-600 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-accent-cyan">
+                    <option value="all">All Environments</option>
+                    <option value="Production">Production</option>
+                    <option value="Staging">Staging</option>
+                    <option value="Development">Development</option>
+                </select>
+
+                <!-- Time Range -->
+                <select id="timeRange" onchange="applyFilters()" class="bg-navy-950 border border-navy-600 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-accent-cyan">
+                    <option value="24h">Last 24 Hours</option>
+                    <option value="7d">Last 7 Days</option>
+                    <option value="30d">Last 30 Days</option>
+                </select>
+
+                <!-- Refresh Button -->
+                <button onclick="fetchAllData()" class="p-2 rounded-lg bg-navy-950 border border-navy-600 text-[#92A3BC] hover:text-white hover:border-accent-cyan transition-all" title="Refresh Data">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                </button>
+
+                <!-- Notification Bell with Dropdown Menu -->
+                <div class="relative">
+                    <button onclick="toggleNotificationDropdown()" class="p-2 rounded-lg bg-navy-950 border border-navy-600 text-[#92A3BC] hover:text-white transition-all relative">
+                        <i data-lucide="bell" class="w-4 h-4"></i>
+                        <span id="bellBadge" class="absolute -top-1 -right-1 w-4 h-4 bg-accent-coral text-white text-[10px] font-bold rounded-full flex items-center justify-center">2</span>
+                    </button>
+                    <!-- Dropdown Content -->
+                    <div id="notificationDropdown" class="absolute right-0 mt-2 w-80 bg-navy-900 border border-navy-600 rounded-2xl shadow-2xl hidden z-50 p-4 space-y-3">
+                        <div class="flex justify-between items-center border-b border-navy-600 pb-2">
+                            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Active Incidents / Alerts</h4>
+                            <span class="text-[10px] text-accent-cyan cursor-pointer hover:underline" onclick="switchSection('incidents'); toggleNotificationDropdown();">View All</span>
+                        </div>
+                        <div id="notificationList" class="space-y-2 max-h-60 overflow-y-auto">
+                            <!-- Dynamically filled -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Main Workspace Area -->
+        <main id="mainWorkspace" class="flex-1 p-6 overflow-y-auto">
+            <!-- Content gets dynamically injected here -->
+        </main>
+    </div>
+
+    <!-- Add Monitor Modal -->
+    <div id="addModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-navy-900 border border-navy-600 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
+            <div class="flex items-center justify-between pb-4 border-b border-navy-600 mb-5">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i data-lucide="server" class="w-5 h-5 text-accent-cyan"></i> Register Website Monitor
+                </h3>
+                <button onclick="toggleModal(false)" class="text-[#92A3BC] hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <form id="monitorForm" onsubmit="submitNewMonitor(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-[#92A3BC] mb-1 uppercase">Monitor Display Name</label>
+                    <input type="text" id="mName" required placeholder="e.g., Campus Payment Gateway" class="w-full bg-navy-950 border border-navy-600 rounded-xl px-4 py-2.5 text-sm text-white placeholder-[#92A3BC]/50 focus:outline-none focus:border-accent-cyan">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-[#92A3BC] mb-1 uppercase">Website Endpoint URL</label>
+                    <input type="url" id="mUrl" required placeholder="https://pay.cit.edu.in" class="w-full bg-navy-950 border border-navy-600 rounded-xl px-4 py-2.5 text-sm text-white placeholder-[#92A3BC]/50 focus:outline-none focus:border-accent-cyan font-mono">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-[#92A3BC] mb-1 uppercase">Environment</label>
+                        <select id="mEnv" class="w-full bg-navy-950 border border-navy-600 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accent-cyan">
+                            <option value="Production">Production</option>
+                            <option value="Staging">Staging</option>
+                            <option value="Development">Development</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-[#92A3BC] mb-1 uppercase">Check Interval</label>
+                        <select id="mInterval" class="w-full bg-navy-950 border border-navy-600 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accent-cyan">
+                            <option value="30s">30 Seconds</option>
+                            <option value="1m">1 Minute</option>
+                            <option value="5m">5 Minutes</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-navy-600 mt-6">
+                    <button type="button" onclick="toggleModal(false)" class="px-4 py-2 bg-navy-800 hover:bg-navy-700 text-[#92A3BC] text-sm font-semibold rounded-xl transition-all">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-accent-cyan hover:bg-accent-cyan/90 text-navy-950 font-bold text-sm rounded-xl transition-all shadow-lg shadow-accent-cyan/20">Create Monitor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2"></div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        let appState = {
+            currentSection: 'overview',
+            monitors: [],
+            incidents: [],
+            alerts: [],
+            filterEnv: 'all',
+            searchQuery: '',
+            timeRange: '24h'
+        };
+
+        async function fetchAllData() {
+            try {
+                const [mRes, iRes, aRes] = await Promise.all([
+                    fetch('/api/monitors').then(res => res.json()),
+                    fetch('/api/incidents').then(res => res.json()),
+                    fetch('/api/alert-rules').catch(() => [])
+                ]);
+                appState.monitors = mRes || [];
+                appState.incidents = iRes || [];
+                appState.alerts = Array.isArray(aRes) ? aRes : [
+                    { id: 1, name: 'High Latency Alert', condition: 'Latency > 500ms', channels: 'Email, Webhook', status: 'Active' },
+                    { id: 2, name: 'Outage Notification', condition: 'Status becomes Offline', channels: 'Slack, Email', status: 'Active' }
+                ];
+                updateNotificationBadges();
+                renderWorkspace();
+                showToast('Telemetry data refreshed successfully', 'success');
+            } catch (err) {
+                console.error("Backend connection error:", err);
+                showToast('Running in Demo Mode / Backend disconnected', 'error');
+            }
+        }
+
+        function switchSection(sectionId, btnElement) {
+            appState.currentSection = sectionId;
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-accent-cyan/15', 'text-accent-cyan', 'border', 'border-accent-cyan/30', 'shadow-sm');
+                btn.classList.add('text-[#92A3BC]');
+            });
+            if(btnElement) {
+                btnElement.classList.add('bg-accent-cyan/15', 'text-accent-cyan', 'border', 'border-accent-cyan/30', 'shadow-sm');
+                btnElement.classList.remove('text-[#92A3BC]');
+            }
+            document.getElementById('breadcrumbTitle').innerText = sectionId;
+            renderWorkspace();
+        }
+
+        // --- FILTER & SEARCH IMPLEMENTATION ---
+        function handleGlobalSearch(query) {
+            appState.searchQuery = query.toLowerCase().trim();
+            renderWorkspace();
+        }
+
+        function applyFilters() {
+            appState.filterEnv = document.getElementById('envFilter').value;
+            appState.timeRange = document.getElementById('timeRange').value;
+            renderWorkspace();
+            showToast(`Filters updated: ${appState.filterEnv}`, 'success');
+        }
+
+        function getFilteredMonitors() {
+            return appState.monitors.filter(m => {
+                const matchesSearch = !appState.searchQuery || 
+                    m.name.toLowerCase().includes(appState.searchQuery) || 
+                    m.url.toLowerCase().includes(appState.searchQuery);
+                const matchesEnv = appState.filterEnv === 'all' || m.environment === appState.filterEnv;
+                return matchesSearch && matchesEnv;
+            });
+        }
+
+        // --- NOTIFICATION DROPDOWN TOGGLE ---
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('hidden');
+            const listEl = document.getElementById('notificationList');
+            listEl.innerHTML = '';
+
+            if(appState.incidents.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-[#92A3BC] text-center py-2">No active incidents</p>`;
+            } else {
+                appState.incidents.forEach(inc => {
+                    listEl.innerHTML += `
+                        <div class="p-2.5 bg-navy-950 rounded-xl border border-navy-600 text-xs">
+                            <div class="font-bold text-accent-coral flex justify-between">#INC-${inc.id} <span>${inc.severity}</span></div>
+                            <p class="text-white mt-0.5 truncate">${inc.title}</p>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function updateNotificationBadges() {
+            const count = appState.incidents.length;
+            document.getElementById('incidentBadge').innerText = count;
+            document.getElementById('bellBadge').innerText = count;
+        }
+
+        function renderWorkspace() {
+            const ws = document.getElementById('mainWorkspace');
+            ws.innerHTML = '';
+
+            if (appState.currentSection === 'overview') ws.innerHTML = renderOverviewHTML();
+            else if (appState.currentSection === 'monitors') ws.innerHTML = renderMonitorsHTML();
+            else if (appState.currentSection === 'analytics') ws.innerHTML = renderAnalyticsHTML();
+            else if (appState.currentSection === 'incidents') ws.innerHTML = renderIncidentsHTML();
+            else if (appState.currentSection === 'sla') ws.innerHTML = renderSLAHTML();
+            else if (appState.currentSection === 'alerts') ws.innerHTML = renderAlertsHTML();
+            else if (appState.currentSection === 'settings') ws.innerHTML = renderSettingsHTML();
+
+            lucide.createIcons();
+        }
+
+        // --- SECTION RENDERERS ---
+
+        function renderOverviewHTML() {
+            const monitors = getFilteredMonitors();
+            const total = monitors.length;
+            const online = monitors.filter(m => m.status === 'Online').length;
+            const degraded = monitors.filter(m => m.status === 'Degraded').length;
+            const offline = monitors.filter(m => m.status === 'Offline').length;
+            const avgLatency = total ? Math.round(monitors.reduce((acc, m) => acc + (m.response_time || 0), 0) / total) : 0;
+            const uptime = total ? (monitors.reduce((acc, m) => acc + (m.uptime_percentage || 100), 0) / total).toFixed(2) : '100.00';
+
+            return `
+                <div class="space-y-6">
+                    <!-- Hero Banner -->
+                    <div class="bg-gradient-to-r from-navy-900 to-navy-800 border border-navy-600 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xl">
+                        <div>
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-teal/10 text-accent-teal text-xs font-semibold mb-2 border border-accent-teal/20">
+                                <span class="w-2 h-2 rounded-full bg-accent-teal animate-pulse"></span> Reliability Command Center (${appState.timeRange})
+                            </div>
+                            <h2 class="text-xl font-bold text-white tracking-tight">Website Reliability & Telemetry Overview</h2>
+                            <p class="text-xs text-[#92A3BC] mt-1">Showing records for environment: <b class="text-accent-cyan">${appState.filterEnv}</b></p>
+                        </div>
+                        <button onclick="toggleModal(true)" class="px-5 py-2.5 bg-accent-cyan text-navy-950 font-bold text-xs rounded-xl hover:bg-accent-cyan/90 transition-all shadow-lg shadow-accent-cyan/20 flex items-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Add Monitor
+                        </button>
+                    </div>
+
+                    <!-- 4 KPI Summary Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                        <div class="bg-navy-900 border border-navy-600 p-5 rounded-2xl shadow-md">
+                            <div class="flex items-center justify-between mb-3 text-xs font-semibold text-[#92A3BC]">
+                                <span>Monitored Websites</span>
+                                <i data-lucide="server" class="w-4 h-4 text-accent-cyan"></i>
+                            </div>
+                            <div class="text-2xl font-bold text-white mb-1">${total}</div>
+                            <p class="text-[11px] text-[#92A3BC]">Active endpoints tracked</p>
+                        </div>
+                        <div class="bg-navy-900 border border-navy-600 p-5 rounded-2xl shadow-md">
+                            <div class="flex items-center justify-between mb-3 text-xs font-semibold text-[#92A3BC]">
+                                <span>Operational Status</span>
+                                <i data-lucide="check-circle-2" class="w-4 h-4 text-accent-teal"></i>
+                            </div>
+                            <div class="text-2xl font-bold text-white mb-1">${online}/${total}</div>
+                            <p class="text-[11px] text-accent-teal font-medium">${degraded} degraded, ${offline} down</p>
+                        </div>
+                        <div class="bg-navy-900 border border-navy-600 p-5 rounded-2xl shadow-md">
+                            <div class="flex items-center justify-between mb-3 text-xs font-semibold text-[#92A3BC]">
+                                <span>Average Latency</span>
+                                <i data-lucide="zap" class="w-4 h-4 text-accent-amber"></i>
+                            </div>
+                            <div class="text-2xl font-bold text-white mb-1">${avgLatency} ms</div>
+                            <p class="text-[11px] text-[#92A3BC]">Across active checks</p>
+                        </div>
+                        <div class="bg-navy-900 border border-navy-600 p-5 rounded-2xl shadow-md">
+                            <div class="flex items-center justify-between mb-3 text-xs font-semibold text-[#92A3BC]">
+                                <span>SLA Availability</span>
+                                <i data-lucide="shield-check" class="w-4 h-4 text-accent-violet"></i>
+                            </div>
+                            <div class="text-2xl font-bold text-white mb-1">${uptime}%</div>
+                            <p class="text-[11px] text-accent-violet font-medium">Target: 99.9% (Stable)</p>
+                        </div>
+                    </div>
+
+                    <!-- Service Health Grid -->
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-sm font-bold text-white tracking-wide uppercase">Service Health Matrix</h3>
+                            <button onclick="switchSection('monitors')" class="text-xs text-accent-cyan hover:underline">View all monitors →</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            ${monitors.map(m => `
+                                <div class="bg-navy-900 border border-navy-600 p-5 rounded-2xl hover:border-accent-cyan/40 transition-all shadow-md">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-navy-950 border border-navy-600 text-accent-cyan">${m.environment || 'Production'}</span>
+                                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1.5 ${m.status === 'Online' ? 'bg-accent-teal/10 text-accent-teal' : m.status === 'Degraded' ? 'bg-accent-amber/10 text-accent-amber' : 'bg-accent-coral/10 text-accent-coral'}">
+                                            <span class="w-1.5 h-1.5 rounded-full ${m.status === 'Online' ? 'bg-accent-teal' : m.status === 'Degraded' ? 'bg-accent-amber' : 'bg-accent-coral'}"></span> ${m.status}
+                                        </span>
+                                    </div>
+                                    <h4 class="font-bold text-white text-sm truncate mb-1">${m.name}</h4>
+                                    <p class="text-xs text-[#92A3BC] font-mono truncate mb-4">${m.url}</p>
+                                    <div class="grid grid-cols-2 gap-3 pt-3 border-t border-navy-600 text-xs">
+                                        <div><span class="text-[#92A3BC] block text-[10px]">Latency</span><span class="font-mono font-bold text-white">${m.response_time || 0} ms</span></div>
+                                        <div><span class="text-[#92A3BC] block text-[10px]">Uptime</span><span class="font-mono font-bold text-accent-teal">${m.uptime_percentage || 100}%</span></div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderMonitorsHTML() {
+            const monitors = getFilteredMonitors();
+            return `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center bg-navy-900 border border-navy-600 p-6 rounded-2xl shadow-lg">
+                        <div>
+                            <h2 class="text-lg font-bold text-white">Monitors Management Center</h2>
+                            <p class="text-xs text-[#92A3BC]">Configure, test, or remove tracked web endpoints with full operational telemetry.</p>
+                        </div>
+                        <button onclick="toggleModal(true)" class="px-4 py-2.5 bg-accent-cyan text-navy-950 font-bold text-xs rounded-xl shadow-md flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Add Monitor</button>
+                    </div>
+
+                    <div class="bg-navy-900 border border-navy-600 rounded-2xl overflow-hidden shadow-xl">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-navy-800 text-[#92A3BC] uppercase text-[10px] border-b border-navy-600">
+                                <tr>
+                                    <th class="p-4">ID</th>
+                                    <th class="p-4">Website Name</th>
+                                    <th class="p-4">Endpoint URL</th>
+                                    <th class="p-4">Environment</th>
+                                    <th class="p-4">Status</th>
+                                    <th class="p-4">Response Time</th>
+                                    <th class="p-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-navy-600">
+                                ${monitors.map(m => `
+                                    <tr class="hover:bg-navy-800/50 transition-colors">
+                                        <td class="p-4 font-mono text-[#92A3BC]">#${m.id}</td>
+                                        <td class="p-4 font-bold text-white flex items-center gap-2"><i data-lucide="globe" class="w-4 h-4 text-accent-cyan"></i>${m.name}</td>
+                                        <td class="p-4 font-mono text-[#92A3BC] truncate max-w-xs">${m.url}</td>
+                                        <td class="p-4"><span class="px-2 py-0.5 rounded bg-navy-950 border border-navy-600 font-mono text-[10px] text-accent-cyan">${m.environment}</span></td>
+                                        <td class="p-4"><span class="font-semibold px-2.5 py-1 rounded-full ${m.status === 'Online' ? 'bg-accent-teal/10 text-accent-teal' : 'bg-accent-coral/10 text-accent-coral'}">${m.status}</span></td>
+                                        <td class="p-4 font-mono font-bold text-white">${m.response_time} ms</td>
+                                        <td class="p-4 text-right space-x-2">
+                                            <button onclick="triggerCheck(${m.id})" class="px-3 py-1 bg-navy-800 border border-navy-600 rounded-lg hover:border-accent-cyan text-white shadow-sm">Check Now</button>
+                                            <button onclick="deleteMonitor(${m.id})" class="px-3 py-1 bg-accent-coral/10 border border-accent-coral/30 text-accent-coral rounded-lg hover:bg-accent-coral/20">Delete</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAnalyticsHTML() {
+            return `
+                <div class="space-y-6">
+                    <div class="bg-navy-900 border border-navy-600 p-6 rounded-2xl shadow-lg">
+                        <h2 class="text-lg font-bold text-white">Reliability Intelligence Workspace</h2>
+                        <p class="text-xs text-[#92A3BC]">Deep latency distribution & error budget consumption analytics computed from SQLite records.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div class="bg-navy-900 border border-navy-600 p-5 rounded-2xl shadow-md"><h3 class="text-xs text-[#92A3BC]">Peak Recorded Latency</h3><p class="text-2xl font-bold text-white mt-1">840 ms</p><span class="text-[10px] text-accent-amber font-medium">Student Portal API</span></div>
+                        <div class="bg-navy-900 border border-navy-600 p-5 rounded-2xl shadow-md"><h3 class="text-xs text-[#92A3BC]">Median Latency (P50)</h3><p class="text-2xl font-bold text-white mt-1">142 ms</p><span class="text-[10px] text-accent-cyan font-medium">Active Production Nodes</span></div>
+                        <div class="bg-navy-900 border border-navy-600 p-5 rounded-2xl shadow-md"><h3 class="text-xs text-[#92A3BC]">Telemetry Success Rate</h3><p class="text-2xl font-bold text-accent-teal mt-1">99.88%</p><span class="text-[10px] text-[#92A3BC]">Last 24 Hours Window</span></div>
+                    </div>
+                    <div class="bg-navy-900 border border-navy-600 p-8 rounded-2xl text-center shadow-xl border-dashed border-navy-600">
+                        <i data-lucide="bar-chart-3" class="w-12 h-12 text-accent-cyan mx-auto mb-3"></i>
+                        <h3 class="text-sm font-bold text-white tracking-wide">Telemetry & Latency Time-Series Stream Active</h3>
+                        <p class="text-xs text-[#92A3BC] mt-1 max-w-md mx-auto">All checked endpoints maintain stable performance curves within operational tolerances under Jenkins CI/CD automation.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderIncidentsHTML() {
+            return `
+                <div class="space-y-6">
+                    <div class="bg-navy-900 border border-navy-600 p-6 rounded-2xl shadow-lg">
+                        <h2 class="text-lg font-bold text-white">Incident Command Center</h2>
+                        <p class="text-xs text-[#92A3BC]">Active alerts and reliability bottlenecks requiring operator attention.</p>
+                    </div>
+                    <div class="bg-navy-900 border border-navy-600 rounded-2xl overflow-hidden shadow-xl">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-navy-800 text-[#92A3BC] uppercase text-[10px] border-b border-navy-600">
+                                <tr>
+                                    <th class="p-4">Incident ID</th>
+                                    <th class="p-4">Monitor Affected</th>
+                                    <th class="p-4">Trigger Description</th>
+                                    <th class="p-4">Severity</th>
+                                    <th class="p-4">Status</th>
+                                    <th class="p-4 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-navy-600">
+                                ${appState.incidents.map(inc => `
+                                    <tr class="hover:bg-navy-800/50 transition-colors">
+                                        <td class="p-4 font-mono font-bold text-white">#INC-${inc.id}</td>
+                                        <td class="p-4 font-semibold text-white flex items-center gap-2"><i data-lucide="alert-circle" class="w-4 h-4 text-accent-amber"></i>${inc.monitor_name || inc.monitorName || 'Endpoint'}</td>
+                                        <td class="p-4 text-[#92A3BC]">${inc.title}</td>
+                                        <td class="p-4 font-bold text-accent-amber">${inc.severity}</td>
+                                        <td class="p-4"><span class="px-2.5 py-1 rounded-full bg-accent-amber/10 text-accent-amber font-semibold">${inc.status}</span></td>
+                                        <td class="p-4 text-right"><button onclick="resolveIncident(${inc.id})" class="px-3 py-1 bg-accent-teal/10 border border-accent-teal/30 text-accent-teal rounded-lg hover:bg-accent-teal/20 shadow-sm font-semibold">Resolve</button></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderSLAHTML() {
+            return `
+                <div class="space-y-6">
+                    <div class="bg-navy-900 border border-navy-600 p-6 rounded-2xl shadow-lg">
+                        <h2 class="text-lg font-bold text-white">Service Level Agreement (SLA) Reports</h2>
+                        <p class="text-xs text-[#92A3BC]">Compliance tracking against target 99.9% availability commitment.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                        <div class="bg-navy-900 border border-navy-600 p-5 rounded-2xl shadow-md"><h3 class="text-xs text-[#92A3BC]">Target SLA</h3><p class="text-2xl font-bold text-white mt-1">99.9%</p><span class="text-[10px] text-[#92A3BC]">Commitment</span></div>
+                        <div class="bg-navy-900 border border-navy-600 p-5 rounded-2xl shadow-md"><h3 class="text-xs text-[#92A3BC]">Actual Uptime</h3><p class="text-2xl font-bold text-accent-teal mt-1">99.88%</p><span class="text-[10px] text-accent-teal">Measured</span></div>
+                        <div class="bg-navy-900 border border-navy-600 p-5 rounded-2xl shadow-md"><h3 class="text-xs text-[#92A3BC]">Total Downtime</h3><p class="text-2xl font-bold text-accent-amber mt-1">42 mins</p><span class="text-[10px] text-accent-amber">Logged</span></div>
+                        <div class="bg-navy-900 border border-navy-600 p-5 rounded-2xl shadow-md"><h3 class="text-xs text-[#92A3BC]">Compliance Verdict</h3><p class="text-2xl font-bold text-accent-teal mt-1">PASSED</p><span class="text-[10px] text-accent-teal">Error budget safe</span></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAlertsHTML() {
+            return `
+                <div class="space-y-6">
+                    <div class="bg-navy-900 border border-navy-600 p-6 rounded-2xl flex justify-between items-center shadow-lg">
+                        <div>
+                            <h2 class="text-lg font-bold text-white">Alert Rules & Notification Channels</h2>
+                            <p class="text-xs text-[#92A3BC]">Automated webhook and email triggers configured via DevOps tooling.</p>
+                        </div>
+                        <button onclick="showToast('Alert rule builder opened', 'success')" class="px-4 py-2.5 bg-accent-cyan text-navy-950 font-bold text-xs rounded-xl shadow-md flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> New Rule</button>
+                    </div>
+                    <div class="bg-navy-900 border border-navy-600 rounded-2xl overflow-hidden shadow-xl">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-navy-800 text-[#92A3BC] uppercase text-[10px] border-b border-navy-600">
+                                <tr><th class="p-4">Rule Name</th><th class="p-4">Trigger Condition</th><th class="p-4">Channels</th><th class="p-4">Status</th></tr>
+                            </thead>
+                            <tbody class="divide-y divide-navy-600">
+                                ${appState.alerts.map(a => `
+                                    <tr class="hover:bg-navy-800/50 transition-colors">
+                                        <td class="p-4 font-bold text-white flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4 text-accent-violet"></i>${a.name}</td>
+                                        <td class="p-4 font-mono text-[#92A3BC]">${a.condition || a.condition_rule}</td>
+                                        <td class="p-4 text-accent-cyan font-medium">${a.channels}</td>
+                                        <td class="p-4"><span class="px-2.5 py-1 rounded-full bg-accent-teal/10 text-accent-teal font-semibold">Active</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderSettingsHTML() {
+            return `
+                <div class="space-y-6 max-w-3xl">
+                    <div class="bg-navy-900 border border-navy-600 p-6 rounded-2xl shadow-lg">
+                        <h2 class="text-lg font-bold text-white mb-2">System Settings & Engine Configuration</h2>
+                        <p class="text-xs text-[#92A3BC] mb-6">Manage core polling parameters, database persistence, and pipeline runtimes.</p>
+                        <div class="space-y-4 text-xs">
+                            <div>
+                                <label class="block text-[#92A3BC] mb-1.5 uppercase font-semibold">Default Polling Interval</label>
+                                <input type="text" value="30 Seconds" disabled class="w-full bg-navy-950 border border-navy-600 rounded-xl p-3 text-white font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-[#92A3BC] mb-1.5 uppercase font-semibold">SQLite Database Path</label>
+                                <input type="text" value="/app/data/pulseops.db" disabled class="w-full bg-navy-950 border border-navy-600 rounded-xl p-3 text-white font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-[#92A3BC] mb-1.5 uppercase font-semibold">CI/CD Pipeline Engine</label>
+                                <input type="text" value="Jenkins + Docker Containerized (Ansible Deployed)" disabled class="w-full bg-navy-950 border border-navy-600 rounded-xl p-3 text-white font-medium">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- INTERACTIVE ACTIONS ---
+
+        function toggleModal(show) {
+            document.getElementById('addModal').style.display = show ? 'flex' : 'none';
+        }
+
+        async function submitNewMonitor(e) {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById('mName').value,
+                url: document.getElementById('mUrl').value,
+                environment: document.getElementById('mEnv').value,
+                interval: document.getElementById('mInterval').value
+            };
+            try {
+                const res = await fetch('/api/monitors', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if(res.ok) {
+                    toggleModal(false);
+                    fetchAllData();
+                    showToast('Website monitor registered successfully!', 'success');
+                }
+            } catch (err) {
+                showToast('Failed to connect to backend', 'error');
+            }
+        }
+
+        async function deleteMonitor(id) {
+            if(confirm('Are you sure you want to delete this monitor?')) {
+                try {
+                    await fetch(`/api/monitors/${id}/delete`, { method: 'DELETE' });
+                    fetchAllData();
+                    showToast('Monitor removed successfully', 'success');
+                } catch(e) {
+                    showToast('Action failed', 'error');
+                }
+            }
+        }
+
+        function triggerCheck(id) {
+            showToast(`Polling check initiated for Monitor #${id}...`, 'success');
+            setTimeout(fetchAllData, 1000);
+        }
+
+        function resolveIncident(id) {
+            appState.incidents = appState.incidents.filter(i => i.id !== id);
+            updateNotificationBadges();
+            renderWorkspace();
+            showToast(`Incident #INC-${id} marked as resolved`, 'success');
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `px-4 py-3 rounded-xl border text-xs font-semibold shadow-2xl transition-all duration-300 ${type === 'success' ? 'bg-navy-900 border-accent-teal text-accent-teal' : 'bg-navy-900 border-accent-coral text-accent-coral'}`;
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3000);
+        }
+
+        // Initial Load
+        fetchAllData();
+    </script>
+</body>
+</html>

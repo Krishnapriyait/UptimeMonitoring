@@ -1,5 +1,5 @@
-from app import app
 import pytest
+from app import app
 
 @pytest.fixture
 def client():
@@ -7,6 +7,10 @@ def client():
     with app.test_client() as client:
         yield client
 
-def test_home_page(client):
+def test_home_status(client):
     response = client.get('/')
+    assert response.status_code == 200
+
+def test_api_monitors(client):
+    response = client.get('/api/monitors')
     assert response.status_code == 200

@@ -1,0 +1,13 @@
+---
+- hosts: dockerhost
+  tasks:
+    - name: Manage PulseOps Container
+      community.docker.docker_container:
+        name: pulseops-ansible
+        image: pulseops-ci
+        state: "{{ container_state | default('started') }}"
+        restart_policy: unless-stopped
+        published_ports:
+          - "5000:5000"
+        volumes:
+          - "pulseops_data:/app/data"
